@@ -17,7 +17,7 @@ We will be deploying these as a single unit with Argo CD using the Application C
 * `Application Name`: test
 * `Project Name`: default
 * `SYNC POLICY`: Manual
-* `RETRY` Select this off, and leave the defaults
+* `RETRY` Enable this, and leave the defaults
 * `Repository URL`: https://github.com/christianh814/kbe-apps
 * `Revision`: main
 * `Path`: 00-deploying-application

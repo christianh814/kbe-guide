@@ -28,7 +28,7 @@ spec:
         - name: deploy.route.tls.enabled
           value: "true"
         - name: image.name
-          value: quay.io/redhatworkshops/gitops-helm-quarkus:latest
+          value: quay.io/redhatworkshops/gitops-helm-quarkus
     chart: quarkus
     repoURL: https://redhat-developer.github.io/redhat-helm-charts
     targetRevision: 0.0.3
@@ -56,4 +56,60 @@ Once you've applied this Argo CD Application manifest, it should deploy the spec
 
 ![argocd-helm-app](img/argocd-helm-app.png)
 
-Pay special attention to the Helm (⎈) logo, indicating that it's a Helm chart being deployed.
+Pay special attention to the Helm (⎈) logo, indicating that it's a Helm chart being deployed with Argo CD.
+
+# Umbrella Charts
+
+The [Helm Umbrella Chart](https://github.com/argoproj/argocd-example-apps/blob/master/helm-dependency/README.md), is sort of a "meta" (empty) Helm Chart that lists other Helm Charts as a dependency. To put it simply, it's an emtpy Helm chart in a repo that lists other Helm Charts to install.
+
+> NOTE: In the next example there will only be one chart, but you can list multiple charts. This is helpful for when your Application is made up of several Helm Charts.
+
+Taking a look at the example repo in the [02-working-with-helm/repo/](https://github.com/christianh814/kbe-apps/02-working-with-helm/repo) directory. You will see two files. A [Chart.yaml](https://raw.githubusercontent.com/christianh814/kbe-apps/main/02-working-with-helm/repo/Chart.yaml) file and a [Values.yaml](https://raw.githubusercontent.com/christianh814/kbe-apps/main/02-working-with-helm/repo/values.yaml) file. 
+
+The `Chart.yaml` file, is creating an "empty" Helm chart and adding the Helm chart you want to deploy as a dependency in the `dependecies` secion.
+
+```yaml
+apiVersion: v2
+name: quarkus-subchart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+dependencies:
+- name: quarkus
+  version: 0.0.3
+  repository: https://redhat-developer.github.io/redhat-helm-charts
+```
+
+The `values.yaml` file specifies the values you want to pass to the Helm chart.
+
+```yaml
+quarkus:
+  build:
+    enabled: false
+  deploy:
+    route:
+      enabled: false
+    replicas: 2
+  image:
+    name: quay.io/redhatworkshops/gitops-helm-quarkus
+```
+
+We will be deploying this Helm Chart with Argo CD using the WebUI. First click on the `+ NEW APP` button on the Argo CD UI. And fill out the following.
+
+* `Application Name`: quarkus-subchart
+* `Project Name`: default
+* `SYNC POLICY`: Automatic
+* `SELF HEAL`: Enable this
+* `AUTO-CREATE NAMESPACE`: Enable this as well
+* `RETRY` Enable this, and leave the defaults
+* `Repository URL`: https://github.com/christianh814/kbe-apps
+* `Revision`: main
+* `Path`: 02-working-with-helm/repo
+* `Cluster URL`: https://kubernetes.default.svc
+* `Namespace`: foobar
+
+After a while, you should see the Application synced and healthy. Note that this time, you will see this as a "Git" Application (denoted by the Git logo) instead of a Helm Application. 
+
+![quarkus-subchart](img/helm-repo.png)
+
+Taking a step back with this method; This is more GitOps friendly as now the state of your deployment is stored in a git repo. You can now use git workflows to update this application if, for example, you want to change the image or the number of replicas. You can now PR into this repo as you would in a GitOps workflow.

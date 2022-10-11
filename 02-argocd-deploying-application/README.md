@@ -119,7 +119,7 @@ spec:
 Conversely, you can run the following command:
 
 ```
-kubectl patch application/test -n argocd --type=merge -p='{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}
+kubectl patch application/test -n argocd --type=merge -p='{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
 ```
 
 Now try introducing a change by running the same scale command: `kubectl scale deployment/bgd --replicas=3 -n test`
